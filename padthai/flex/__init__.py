@@ -97,7 +97,8 @@ class FlexGPT2FewShot:
         num_train_epochs: int = 10,
         train_size: float = 0.95,
         random_splits: bool = True,
-        batch_size: int = 2
+        batch_size: int = 2,
+        save_every_epochs: bool = True
     ):
         """
         Train model
@@ -108,7 +109,12 @@ class FlexGPT2FewShot:
         :param str train_size: size of train set
         :param bool random_splits: use random_split for random split train & eval dataset
         :param int batch_size: batch size
+        :param bool save_every_epochs: save model every epochs
         """
+        if save_every_epochs:
+            self.evaluation_strategy = "epoch"
+        else:
+            self.evaluation_strategy = "no"
         self.data = data
         self.max_length = max(
             [len(self.tokenizer.encode(i)) for i in self.data]
@@ -135,7 +141,7 @@ class FlexGPT2FewShot:
             num_train_epochs=num_train_epochs,
             per_device_train_batch_size=batch_size,
             logging_strategy="epoch",
-            save_strategy="epoch",
+            save_strategy=self.evaluation_strategy,
             per_device_eval_batch_size=batch_size,
             logging_dir=logging_dir
         )

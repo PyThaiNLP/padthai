@@ -70,7 +70,7 @@ class GPTNeoFewShot:
     def __init__(
         self,
         model_dir: str,
-        model_name: str = "thaigpt-next",
+        model_name: str = "gpt-neo",
         device: str = "cuda",
         size: str = "125M"
     ):
@@ -109,7 +109,7 @@ class GPTNeoFewShot:
         elif model_name == "gpt-neo":
             self.pretrained = "EleutherAI/gpt-neo-"+str(size)
         else:
-            raise NotImplementedError()
+            raise ValueError('Not support {0}'.format(model_name+" "+size))
         self.tokenizer = GPT2Tokenizer.from_pretrained(
             self.pretrained,
             bos_token=self.bos_token,
@@ -145,7 +145,8 @@ class GPTNeoFewShot:
         num_train_epochs: int = 10,
         train_size: float = 0.95,
         random_splits: bool = True,
-        batch_size: int = 2
+        batch_size: int = 2,
+        save_every_epochs: bool = True
     ):
         """
         Train model
@@ -155,8 +156,12 @@ class GPTNeoFewShot:
         :param int num_train_epochs: Number train epochs
         :param str train_size: size of train set
         :param bool random_splits: use random_split for random split train & eval dataset
-        :param int batch_size: batch size
+        :param bool save_every_epochs: save model every epochs
         """
+        if save_every_epochs:
+            self.evaluation_strategy = "epoch"
+        else:
+            self.evaluation_strategy = "no"
         self.data = data
         self.max_length = max(
             [len(self.tokenizer.encode(i)) for i in self.data]
@@ -185,7 +190,7 @@ class GPTNeoFewShot:
             num_train_epochs=num_train_epochs,
             per_device_train_batch_size=batch_size,
             logging_strategy="epoch",
-            save_strategy="epoch",
+            save_strategy=self.evaluation_strategy,
             per_device_eval_batch_size=batch_size,
             logging_dir=logging_dir
         )
