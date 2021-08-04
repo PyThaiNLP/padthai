@@ -13,7 +13,7 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     author="Wannaphong Phatthiyaphaibun",
-    author_email="wannaphong@kkumail.com",
+    author_email="wannaphong@yahoo.com",
     packages=find_packages(exclude=["tests", "tests.*"]),
     python_requires=">=3.7",
     include_package_data=True,
