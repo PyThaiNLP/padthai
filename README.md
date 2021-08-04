@@ -3,6 +3,8 @@ Make Pad Thai From few-shot learning 😉
 
 PadThai is tool for make few-shot learning in Thai NLP (Thai Language).
 
+Thank you code from https://link.medium.com/4FfbALWz8gb
+
 ## Install
 > pip install padthai
 
