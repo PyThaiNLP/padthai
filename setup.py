@@ -15,8 +15,15 @@ setup(
     author="Wannaphong Phatthiyaphaibun",
     author_email="wannaphong@yahoo.com",
     packages=find_packages(exclude=["tests", "tests.*"]),
+    url="https://github.com/PyThaiNLP/padthai",
     python_requires=">=3.7",
     include_package_data=True,
     install_requires=requirements,
     license="Apache Software License 2.0",
+    project_urls={
+        "Documentation": "https://pythainlp.github.io/padthai/",
+        "Tutorials": "https://github.com/PyThaiNLP/padthai/tree/main/notebooks",
+        "Source Code": "https://github.com/PyThaiNLP/padthai",
+        "Bug Tracker": "https://github.com/PyThaiNLP/padthai/issues",
+    }
 )
