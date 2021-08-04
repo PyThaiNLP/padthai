@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8-sig") as f:
     readme = f.read()
 
 with open("requirements.txt", "r", encoding="utf-8-sig") as f:
-    requirements = [i.strip() for i in f.splitlines()]
+    requirements = [i.strip() for i in f.readlines()]
 
 setup(
     name="padthai",
