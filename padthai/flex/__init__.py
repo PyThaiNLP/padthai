@@ -101,6 +101,7 @@ class FlexGPT2FewShot:
     ):
         """
         Train model
+
         :param str data: List for text
         :param str logging_dir: logging directory
         :param int num_train_epochs: Number train epochs
