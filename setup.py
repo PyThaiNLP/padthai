@@ -12,6 +12,7 @@ setup(
     description="Make Pad Thai From few-shot learning 😉",
     long_description=readme,
     long_description_content_type="text/markdown",
+    author="Wannaphong Phatthiyaphaibun",
     author_email="wannaphong@kkumail.com",
     packages=find_packages(exclude=["tests", "tests.*"]),
     python_requires=">=3.7",
