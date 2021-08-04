@@ -5,6 +5,9 @@ PadThai is tool for make few-shot learning in Thai NLP (Thai Language).
 
 Thank you code from https://link.medium.com/4FfbALWz8gb
 
+- Documentation: https://pythainlp.github.io/padthai/
+- Tutorials: https://github.com/PyThaiNLP/padthai/tree/main/notebooks
+
 ## Install
 > pip install padthai
 
