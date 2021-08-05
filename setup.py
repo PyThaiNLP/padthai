@@ -16,7 +16,7 @@ setup(
     author_email="wannaphong@yahoo.com",
     packages=find_packages(exclude=["tests", "tests.*"]),
     url="https://github.com/PyThaiNLP/padthai",
-    python_requires=">=3.7",
+    python_requires=">=3.6",
     include_package_data=True,
     install_requires=requirements,
     license="Apache Software License 2.0",
