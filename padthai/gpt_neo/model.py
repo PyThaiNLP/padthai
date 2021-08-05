@@ -1,57 +1,79 @@
 # -*- coding: utf-8 -*-
 import os
-import torch
 from typing import List
+import torch
 from torch.utils.data import random_split
 from ..dataset import ListDataset
 from transformers import (
     GPT2Tokenizer,
     TrainingArguments,
     Trainer,
-    GPT2LMHeadModel
+    GPTNeoForCausalLM
 )
 torch.manual_seed(42)
 
 
-class FlexGPT2FewShot:
+class GPTNeoFewShot:
     """
-    Few-Shot Learning using GPT-2 from Flax Community
+    Few-Shot Learning using GPT-Neo
 
-    Default model: https://huggingface.co/flax-community/gpt2-base-thai
+    Hoempage: `EleutherAI/gpt-neo <https://github.com/EleutherAI/gpt-neo>`_
     Original code from https://link.medium.com/4FfbALWz8gb
     """
     def __init__(
         self,
         model_dir: str,
-        device: str = torch.device("cuda" if torch.cuda.is_available() else "cpu").type,
-        pretrained: str = "flax-community/gpt2-base-thai"
+        model_name: str = "gpt-neo",
+        device: str = "cuda",
+        size: str = "125M"
     ):
         """
-        :param str model_dir: path of model directory
+        :param str model_dir: path of model dir
+        :param str model_name: model name (thaigpt-next or gpt-neo)
         :param str device: device
-        :param str device: device (cuda is default)
+        :param str size: model size
+        **Options for model_name**
+            * *thaigpt-next* (default) - It is fine-tune the GPT-Neo model for Thai language.
+            * *gpt-neo*
+        **Options for size**
+            * *125M* (default) - GPT-Neo 125M / thaigpt-next-125M
+            * *1.3B* - GPT-Neo 1.3B
+            * *2.7B* - GPT-Neo 2.7B
         """
         self.device = device
+        self.bos_token = '<|startoftext|>'
+        self.eos_token = '<|endoftext|>'
+        self.pad_token = '<|pad|>'
         self.model_dir = model_dir
-        self.pretrained = pretrained
         if not os.path.exists(self.model_dir):
-            self._init_model()
+            self._init_model(model_name, size)
         else:
             self.load_model()
 
-    def _init_model(self) -> None:
+    def _init_model(self, model_name: str, size: str = "125M") -> None:
         """
-        initialize GPT-2 model
+        init GPT-Neo model
+
+        :param str size: model size
+        **Options for size**
+            * *125M* (default) - GPT-Neo 125M
+            * *1.3B* - GPT-Neo 1.3B
+            * *2.7B* - GPT-Neo 2.7B
         """
+        if model_name == "thaigpt-next" and size == "125M":
+            self.pretrained = "wannaphong/thaigpt-next-125m"
+        elif model_name == "gpt-neo":
+            self.pretrained = "EleutherAI/gpt-neo-" + str(size)
+        else:
+            raise ValueError('Not support {0}'.format(model_name+" "+size))
         self.tokenizer = GPT2Tokenizer.from_pretrained(
-            self.pretrained
+            self.pretrained,
+            bos_token=self.bos_token,
+            eos_token=self.eos_token,
+            pad_token=self.pad_token
         )
-        self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-        self.bos_token = self.tokenizer.bos_token
-        self.eos_token = self.tokenizer.eos_token
-        self.pad_token = self.tokenizer.pad_token
         self.tokenizer.save_pretrained(self.model_dir)
-        self.model = GPT2LMHeadModel.from_pretrained(
+        self.model = GPTNeoForCausalLM.from_pretrained(
             self.pretrained
         ).to(self.device)
         self.model.resize_token_embeddings(len(self.tokenizer))
@@ -62,12 +84,12 @@ class FlexGPT2FewShot:
         """
         self.model_dir = self.model_dir
         self.tokenizer = GPT2Tokenizer.from_pretrained(
-            self.model_dir
+            self.model_dir,
+            bos_token=self.bos_token,
+            eos_token=self.eos_token,
+            pad_token=self.pad_token
         )
-        self.bos_token = self.tokenizer.bos_token
-        self.eos_token = self.tokenizer.eos_token
-        self.pad_token = self.tokenizer.pad_token
-        self.model = GPT2LMHeadModel.from_pretrained(
+        self.model = GPTNeoForCausalLM.from_pretrained(
             self.model_dir
         ).to(self.device)
         self.model.resize_token_embeddings(len(self.tokenizer))
@@ -79,8 +101,7 @@ class FlexGPT2FewShot:
         num_train_epochs: int = 10,
         train_size: float = 0.95,
         batch_size: int = 2,
-        save_every_epochs: bool = True,
-        max_length: int = None
+        save_every_epochs: bool = True
     ):
         """
         Train model
@@ -89,31 +110,27 @@ class FlexGPT2FewShot:
         :param str logging_dir: logging directory
         :param int num_train_epochs: Number train epochs
         :param str train_size: size of train set
-        :param int batch_size: batch size
         :param bool save_every_epochs: save model every epochs
-        :param int max_length: maximum token length, default as None
         """
         if save_every_epochs:
             self.evaluation_strategy = "epoch"
         else:
             self.evaluation_strategy = "no"
         self.data = data
-        if max_length is None:
-            self.max_length = max(
-                [len(self.tokenizer.encode(i)) for i in self.data]
-            )
-        else:
-            self.max_length = max_length
+        self.max_length = max(
+            [len(self.tokenizer.encode(i)) for i in self.data]
+        )
         self.dataset = ListDataset(
             self.data,
             self.tokenizer,
-            max_length=self.max_length
+            max_length=self.max_length,
+            bos_token=self.bos_token,
+            eos_token=self.eos_token
         )
         self.train_size = int(train_size * len(self.dataset))
         _, self.val_dataset = random_split(
             self.dataset, [
-                self.train_size,
-                len(self.dataset) - self.train_size
+                self.train_size, len(self.dataset) - self.train_size
             ]
         )
         self.training_args = TrainingArguments(
@@ -174,11 +191,12 @@ class FlexGPT2FewShot:
         :param int temperature: temperature
         :param int num_return_sequences: number of return sequences
         :param bool skip_special_tokens: skip special tokens
+
         :return: return sequences
         :rtype: List[str]
         """
         self.generated = self.tokenizer(
-            text, return_tensors="pt"
+            self.bos_token + text, return_tensors="pt"
         ).input_ids.to(self.device)
         self.sample_outputs = self.model.generate(
             self.generated,
