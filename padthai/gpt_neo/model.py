@@ -101,7 +101,8 @@ class GPTNeoFewShot:
         num_train_epochs: int = 10,
         train_size: float = 0.95,
         batch_size: int = 2,
-        save_every_epochs: bool = True
+        save_every_epochs: bool = True,
+        max_length: int = None
     ):
         """
         Train model
@@ -117,9 +118,12 @@ class GPTNeoFewShot:
         else:
             self.evaluation_strategy = "no"
         self.data = data
-        self.max_length = max(
-            [len(self.tokenizer.encode(i)) for i in self.data]
-        )
+        if max_length is None:
+            self.max_length = max(
+                [len(self.tokenizer.encode(i)) for i in self.data]
+            )
+        else:
+            self.max_length = max_length
         self.dataset = ListDataset(
             self.data,
             self.tokenizer,
