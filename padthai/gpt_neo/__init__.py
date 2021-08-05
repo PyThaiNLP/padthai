@@ -144,7 +144,6 @@ class GPTNeoFewShot:
         logging_dir: str,
         num_train_epochs: int = 10,
         train_size: float = 0.95,
-        random_splits: bool = True,
         batch_size: int = 2,
         save_every_epochs: bool = True
     ):
@@ -155,7 +154,6 @@ class GPTNeoFewShot:
         :param str logging_dir: logging directory
         :param int num_train_epochs: Number train epochs
         :param str train_size: size of train set
-        :param bool random_splits: use random_split for random split train & eval dataset
         :param bool save_every_epochs: save model every epochs
         """
         if save_every_epochs:
@@ -174,14 +172,11 @@ class GPTNeoFewShot:
             eos_token=self.eos_token
         )
         self.train_size = int(train_size * len(self.dataset))
-        if random_splits:
-            _, self.val_dataset = random_split(
-                self.dataset, [
-                    self.train_size, len(self.dataset) - self.train_size
-                ]
-            )
-        else:
-            _, self.val_dataset = self.dataset[(len(self.dataset) - self.train_size):]
+        _, self.val_dataset = random_split(
+            self.dataset, [
+                self.train_size, len(self.dataset) - self.train_size
+            ]
+        )
         self.training_args = TrainingArguments(
             output_dir=self.model_dir,
             do_train=True,
