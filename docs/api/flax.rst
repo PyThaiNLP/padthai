@@ -1,6 +1,6 @@
 .. currentmodule:: padthai
 
-padthai.FlexGPT2FewShot
+padthai.FlaxGPT2FewShot
 =======================
 
 It's GPT-2 model. It was trained on the OSCAR dataset https://huggingface.co/flax-community/gpt2-base-thai
@@ -8,5 +8,5 @@ It's GPT-2 model. It was trained on the OSCAR dataset https://huggingface.co/fla
 Modules
 -------
 
-.. autoclass:: FlexGPT2FewShot
+.. autoclass:: FlaxGPT2FewShot
     :members:

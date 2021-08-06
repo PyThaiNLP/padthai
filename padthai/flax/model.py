@@ -3,7 +3,7 @@ import os
 import torch
 from typing import List
 from torch.utils.data import random_split
-from ..dataset import ListDataset
+from .dataset import ListDataset
 from transformers import (
     GPT2Tokenizer,
     TrainingArguments,
@@ -13,7 +13,7 @@ from transformers import (
 torch.manual_seed(42)
 
 
-class FlexGPT2FewShot:
+class FlaxGPT2FewShot:
     """
     Few-Shot Learning using GPT-2 from Flax Community
 
