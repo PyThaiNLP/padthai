@@ -8,7 +8,7 @@ with open("requirements.txt", "r", encoding="utf-8-sig") as f:
 
 setup(
     name="padthai",
-    version="0.1",
+    version="0.1.1",
     description="Make Pad Thai From few-shot learning 😉",
     long_description=readme,
     long_description_content_type="text/markdown",
