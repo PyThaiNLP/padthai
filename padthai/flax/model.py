@@ -2,6 +2,7 @@
 import os
 import torch
 from typing import List
+import logging
 from torch.utils.data import random_split
 from ..dataset import ListDataset
 from transformers import (
@@ -74,8 +75,9 @@ class FlaxGPT2FewShot:
 
     def train(
         self,
-        data: List[str],
+        train_data: List[str],
         logging_dir: str,
+        test_data: List[str] = None,
         num_train_epochs: int = 10,
         train_size: float = 0.95,
         batch_size: int = 2,
@@ -85,37 +87,56 @@ class FlaxGPT2FewShot:
         """
         Train model
 
-        :param str data: List for text
+        :param List[str] train_data: List text for training
         :param str logging_dir: logging directory
-        :param int num_train_epochs: Number train epochs
-        :param str train_size: size of train set
-        :param int batch_size: batch size
-        :param bool save_every_epochs: save model every epochs
-        :param int max_length: maximum token length, default as None
+        :param List[str] test_data: List text for testing (default is None)
+        :param int num_train_epochs: Number train epochs (default is 10)
+        :param float train_size: size of train set (if test_data is None) (default is 0.95)
+        :param int batch_size: batch size (default is 2)
+        :param bool save_every_epochs: save model every epochs (default is True)
+        :param int max_length: max length (default is None)
         """
         if save_every_epochs:
             self.evaluation_strategy = "epoch"
         else:
             self.evaluation_strategy = "no"
-        self.data = data
         if max_length is None:
+            logging.debug('finding max_length...')
+            if test_data!=None:
+                self.data = train_data+test_data
+            else:
+                self.data = train_data
             self.max_length = max(
                 [len(self.tokenizer.encode(i)) for i in self.data]
             )
         else:
             self.max_length = max_length
-        self.dataset = ListDataset(
-            self.data,
-            self.tokenizer,
-            max_length=self.max_length
-        )
-        self.train_size = int(train_size * len(self.dataset))
-        _, self.val_dataset = random_split(
-            self.dataset, [
-                self.train_size,
-                len(self.dataset) - self.train_size
-            ]
-        )
+        
+        if test_data == None:
+            logging.debug('splitting data by train_size...')
+            self.train_data = ListDataset(
+                train_data,
+                self.tokenizer,
+                max_length=self.max_length,
+            )
+            self.train_size = int(train_size * len(self.train_data))
+            self.train_data, self.test_data = random_split(
+                self.train_data, [
+                    self.train_size, len(self.train_data) - self.train_size
+                ]
+            )
+        else:
+            logging.debug('use train_data and test_data...')
+            self.train_data = ListDataset(
+                train_data,
+                self.tokenizer,
+                max_length=self.max_length,
+            )
+            self.test_data = ListDataset(
+                test_data,
+                self.tokenizer,
+                max_length=self.max_length,
+            )
         self.training_args = TrainingArguments(
             output_dir=self.model_dir,
             do_train=True,
@@ -131,8 +152,8 @@ class FlaxGPT2FewShot:
         self.train = Trainer(
             model=self.model,
             args=self.training_args,
-            train_dataset=self.dataset,
-            eval_dataset=self.val_dataset,
+            train_dataset=self.train_data,
+            eval_dataset=self.test_data,
             data_collator=lambda data: {
                 'input_ids': torch.stack([f[0] for f in data]),
                 'attention_mask': torch.stack([f[1] for f in data]),
