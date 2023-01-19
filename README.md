@@ -19,6 +19,7 @@ pip install padthai
 - [GPT-Neo](https://huggingface.co/EleutherAI) - GPT-Neo is a transformer model designed using EleutherAI's replication of the GPT-3 architecture.
 - [ThaiGPT-Next](https://github.com/wannaphong/thaigpt-next) - It is fine-tune the GPT-Neo model for Thai language.
 - [Flax GPT-2 model](https://huggingface.co/flax-community/gpt2-base-thai) - It's GPT-2 model. It was trained on the OSCAR dataset
+- [mGPT](https://huggingface.co/sberbank-ai/mGPT) - Multilingual GPT model
 
 ## Requirements
 
